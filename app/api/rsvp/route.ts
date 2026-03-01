@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSupabase } from '@/lib/supabase'
+import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Guest count must be between 0 and 10.' }, { status: 400 })
   }
 
-  const supabase = getSupabase()
+  // Use admin client for all DB operations — this is a server-side API route,
+  // so service_role is safe. The anon client cannot SELECT due to RLS.
+  const supabase = getSupabaseAdmin()
 
   // Check for duplicate phone number
   const { data: existing } = await supabase
