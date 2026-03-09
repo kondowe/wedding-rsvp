@@ -5,8 +5,8 @@ import { useState, FormEvent } from 'react'
 type FormState = {
   name: string
   phone: string
+  partner_name: string
   status: 'attending' | 'not_attending'
-  guest_count: number
 }
 
 type SubmitState = 'idle' | 'loading' | 'success' | 'error'
@@ -15,9 +15,10 @@ export default function RSVPForm() {
   const [form, setForm] = useState<FormState>({
     name: '',
     phone: '',
+    partner_name: '',
     status: 'attending',
-    guest_count: 0,
   })
+  const [plusOne, setPlusOne] = useState(false)
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -51,8 +52,8 @@ export default function RSVPForm() {
     return (
       <div className="text-center py-12 px-8">
         <div className="text-6xl mb-4">&#128141;</div>
-        <h2 className="text-3xl font-serif text-rose-800 mb-3">Thank You!</h2>
-        <p className="text-stone-600 text-lg">
+        <h2 className="text-3xl font-serif mb-3" style={{ color: '#fdfaf2' }}>Thank You!</h2>
+        <p className="text-lg" style={{ color: '#d6cfa0' }}>
           Your RSVP has been received. We can&apos;t wait to celebrate with you!
         </p>
       </div>
@@ -61,10 +62,10 @@ export default function RSVPForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 p-8">
-      {/* Full Name */}
+      {/* Your Name */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
-          Full Name <span className="text-rose-500">*</span>
+        <label className="block text-sm font-medium mb-1" style={{ color: '#eae5d0' }}>
+          Your Name <span style={{ color: '#d6cfa0' }}>*</span>
         </label>
         <input
           type="text"
@@ -72,16 +73,21 @@ export default function RSVPForm() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           placeholder="Jane Smith"
-          className="w-full border border-stone-300 rounded-lg px-4 py-2.5 text-stone-800
-                     focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400
-                     placeholder:text-stone-400 transition bg-white"
+          className="w-full rounded-lg px-4 py-2.5 text-stone-800 transition bg-white
+                     placeholder:text-stone-400 focus:outline-none"
+          style={{
+            border: '1px solid #c8c4a8',
+            boxShadow: '0 0 0 0px #8a7d55',
+          }}
+          onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #b5a96a')}
+          onBlur={(e) => (e.target.style.boxShadow = '0 0 0 0px #b5a96a')}
         />
       </div>
 
       {/* Phone */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
-          Phone Number <span className="text-rose-500">*</span>
+        <label className="block text-sm font-medium mb-1" style={{ color: '#eae5d0' }}>
+          Phone Number <span style={{ color: '#d6cfa0' }}>*</span>
         </label>
         <input
           type="tel"
@@ -89,34 +95,40 @@ export default function RSVPForm() {
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
           placeholder="+1 555 000 0000"
-          className="w-full border border-stone-300 rounded-lg px-4 py-2.5 text-stone-800
-                     focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400
-                     placeholder:text-stone-400 transition bg-white"
+          className="w-full rounded-lg px-4 py-2.5 text-stone-800 transition bg-white
+                     placeholder:text-stone-400 focus:outline-none"
+          style={{ border: '1px solid #c8c4a8' }}
+          onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #b5a96a')}
+          onBlur={(e) => (e.target.style.boxShadow = '0 0 0 0px #b5a96a')}
         />
       </div>
 
       {/* RSVP Status */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">
-          Will you be attending? <span className="text-rose-500">*</span>
+        <label className="block text-sm font-medium mb-2" style={{ color: '#eae5d0' }}>
+          Will you be attending? <span style={{ color: '#d6cfa0' }}>*</span>
         </label>
         <div className="flex gap-4">
           {(['attending', 'not_attending'] as const).map((s) => (
             <label
               key={s}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 cursor-pointer
-                          transition font-medium text-sm
-                          ${form.status === s
-                            ? 'border-rose-400 bg-rose-50 text-rose-800'
-                            : 'border-stone-200 text-stone-600 hover:border-rose-200'
-                          }`}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg border-2 cursor-pointer
+                         transition font-medium text-sm"
+              style={{
+                borderColor: form.status === s ? '#c4bc96' : 'rgba(255,255,255,0.3)',
+                backgroundColor: form.status === s ? 'rgba(240,237,223,0.85)' : 'rgba(255,255,255,0.08)',
+                color: form.status === s ? '#3b3d2e' : '#eae5d0',
+              }}
             >
               <input
                 type="radio"
                 name="status"
                 value={s}
                 checked={form.status === s}
-                onChange={() => setForm({ ...form, status: s })}
+                onChange={() => {
+                  setForm({ ...form, status: s, partner_name: '' })
+                  setPlusOne(false)
+                }}
                 className="sr-only"
               />
               {s === 'attending' ? 'Joyfully Attending' : 'Regretfully Declining'}
@@ -125,29 +137,64 @@ export default function RSVPForm() {
         </div>
       </div>
 
-      {/* Guest Count */}
+      {/* +1 toggle — only when attending */}
       {form.status === 'attending' && (
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
-            Number of Additional Guests
+          <label className="block text-sm font-medium mb-2" style={{ color: '#eae5d0' }}>
+            Bringing a partner?
+          </label>
+          <div className="flex gap-3">
+            {([true, false] as const).map((val) => (
+              <label
+                key={String(val)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border-2 cursor-pointer transition font-medium text-sm"
+                style={{
+                  borderColor: plusOne === val ? '#c4bc96' : 'rgba(255,255,255,0.3)',
+                  backgroundColor: plusOne === val ? 'rgba(240,237,223,0.85)' : 'rgba(255,255,255,0.08)',
+                  color: plusOne === val ? '#3b3d2e' : '#eae5d0',
+                }}
+              >
+                <input
+                  type="radio"
+                  name="plusOne"
+                  checked={plusOne === val}
+                  onChange={() => {
+                    setPlusOne(val)
+                    if (!val) setForm({ ...form, partner_name: '' })
+                  }}
+                  className="sr-only"
+                />
+                {val ? '+1 Partner' : 'Just Me'}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Partner Name — only when +1 selected */}
+      {form.status === 'attending' && plusOne && (
+        <div>
+          <label className="block text-sm font-medium mb-1" style={{ color: '#eae5d0' }}>
+            Partner&apos;s Name <span style={{ color: '#d6cfa0' }}>*</span>
           </label>
           <input
-            type="number"
-            min={0}
-            max={10}
-            value={form.guest_count}
-            onChange={(e) => setForm({ ...form, guest_count: parseInt(e.target.value) || 0 })}
-            className="w-32 border border-stone-300 rounded-lg px-4 py-2.5 text-stone-800
-                       focus:outline-none focus:ring-2 focus:ring-rose-300 focus:border-rose-400
-                       transition bg-white"
+            type="text"
+            required
+            value={form.partner_name}
+            onChange={(e) => setForm({ ...form, partner_name: e.target.value })}
+            placeholder="John Smith"
+            className="w-full rounded-lg px-4 py-2.5 text-stone-800 transition bg-white
+                       placeholder:text-stone-400 focus:outline-none"
+            style={{ border: '1px solid #c8c4a8' }}
+            onFocus={(e) => (e.target.style.boxShadow = '0 0 0 2px #b5a96a')}
+            onBlur={(e) => (e.target.style.boxShadow = '0 0 0 0px #b5a96a')}
           />
-          <p className="text-xs text-stone-400 mt-1">Not counting yourself</p>
         </div>
       )}
 
       {/* Error */}
       {submitState === 'error' && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3 rounded-lg">
+        <div className="text-sm px-4 py-3 rounded-lg" style={{ background: '#fdf3f3', border: '1px solid #f5c6c6', color: '#b91c1c' }}>
           {errorMessage}
         </div>
       )}
@@ -156,9 +203,11 @@ export default function RSVPForm() {
       <button
         type="submit"
         disabled={submitState === 'loading'}
-        className="w-full bg-rose-700 hover:bg-rose-800 disabled:bg-rose-300
-                   text-white font-semibold py-3 rounded-lg transition text-sm tracking-wide
-                   focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 cursor-pointer"
+        className="w-full text-white font-semibold py-3 rounded-lg transition text-sm tracking-wide
+                   focus:outline-none cursor-pointer"
+        style={{ backgroundColor: submitState === 'loading' ? '#a8af8e' : '#6b7355' }}
+        onMouseEnter={(e) => { if (submitState !== 'loading') (e.target as HTMLButtonElement).style.backgroundColor = '#4a5240' }}
+        onMouseLeave={(e) => { if (submitState !== 'loading') (e.target as HTMLButtonElement).style.backgroundColor = '#6b7355' }}
       >
         {submitState === 'loading' ? 'Sending RSVP...' : 'Send My RSVP'}
       </button>

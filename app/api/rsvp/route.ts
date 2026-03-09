@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from '@/lib/supabase'
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const { name, phone, status, guest_count } = body
+  const { name, phone, partner_name, status } = body
 
   if (!name || typeof name !== 'string' || name.trim().length < 2) {
     return NextResponse.json({ error: 'Valid name is required.' }, { status: 400 })
@@ -14,13 +14,8 @@ export async function POST(req: NextRequest) {
   if (!['attending', 'not_attending'].includes(status)) {
     return NextResponse.json({ error: 'Invalid RSVP status.' }, { status: 400 })
   }
-  const guestCount = Number(guest_count)
-  if (!Number.isInteger(guestCount) || guestCount < 0 || guestCount > 10) {
-    return NextResponse.json({ error: 'Guest count must be between 0 and 10.' }, { status: 400 })
-  }
+  const partnerName = typeof partner_name === 'string' ? partner_name.trim() : ''
 
-  // Use admin client for all DB operations — this is a server-side API route,
-  // so service_role is safe. The anon client cannot SELECT due to RLS.
   const supabase = getSupabaseAdmin()
 
   // Check for duplicate phone number
@@ -40,8 +35,8 @@ export async function POST(req: NextRequest) {
   const { error } = await supabase.from('rsvps').insert({
     name: name.trim(),
     phone: phone.trim(),
+    partner_name: partnerName || null,
     status,
-    guest_count: guestCount,
   })
 
   if (error) {

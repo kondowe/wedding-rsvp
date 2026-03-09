@@ -5,8 +5,8 @@ type RSVP = {
   created_at: string
   name: string
   phone: string
+  partner_name: string | null
   status: 'attending' | 'not_attending'
-  guest_count: number
 }
 
 type Props = { rsvps: RSVP[] }
@@ -14,63 +14,77 @@ type Props = { rsvps: RSVP[] }
 export default function AdminTable({ rsvps }: Props) {
   const attending = rsvps.filter((r) => r.status === 'attending')
   const notAttending = rsvps.filter((r) => r.status === 'not_attending')
-  const totalGuests = attending.reduce((sum, r) => sum + r.guest_count + 1, 0)
+  // Each couple counts as 2 (or 1 if no partner)
+  const totalGuests = attending.reduce((sum, r) => sum + (r.partner_name ? 2 : 1), 0)
 
   return (
     <div className="space-y-8">
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Attending', value: attending.length, color: 'text-emerald-700' },
-          { label: 'Not Attending', value: notAttending.length, color: 'text-red-600' },
-          { label: 'Total Guests', value: totalGuests, color: 'text-rose-700' },
+          { label: 'Couples Attending', value: attending.length, color: '#4a7c59' },
+          { label: 'Not Attending', value: notAttending.length, color: '#b91c1c' },
+          { label: 'Total Guests', value: totalGuests, color: '#4a5240' },
         ].map(({ label, value, color }) => (
           <div
             key={label}
-            className="bg-white rounded-xl border border-stone-200 p-5 text-center shadow-sm"
+            className="rounded-xl p-5 text-center shadow-sm"
+            style={{ backgroundColor: '#fdfaf2', border: '1px solid #ddd8be' }}
           >
-            <p className={`text-3xl font-serif font-bold ${color}`}>{value}</p>
-            <p className="text-stone-500 text-sm mt-1">{label}</p>
+            <p className="text-3xl font-serif font-bold" style={{ color }}>{value}</p>
+            <p className="text-sm mt-1" style={{ color: '#7a7660' }}>{label}</p>
           </div>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-xl border border-stone-200 overflow-hidden shadow-sm">
+      <div
+        className="rounded-xl overflow-hidden shadow-sm"
+        style={{ border: '1px solid #ddd8be' }}
+      >
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-stone-50 border-b border-stone-200">
+          <table className="w-full text-sm" style={{ backgroundColor: '#fdfaf2' }}>
+            <thead style={{ backgroundColor: '#f0eddf', borderBottom: '1px solid #ddd8be' }}>
               <tr>
-                {['Name', 'Phone', 'Status', 'Total Guests', 'RSVP Date'].map((h) => (
+                {['Name', 'Partner', 'Phone', 'Status', 'RSVP Date'].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-5 py-3 text-stone-600 font-semibold text-xs uppercase tracking-wider"
+                    className="text-left px-5 py-3 text-xs uppercase tracking-wider font-semibold"
+                    style={{ color: '#6b6b5a' }}
                   >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
-              {rsvps.map((r) => (
-                <tr key={r.id} className="hover:bg-stone-50 transition">
-                  <td className="px-5 py-3 font-medium text-stone-800">{r.name}</td>
-                  <td className="px-5 py-3 text-stone-600">{r.phone}</td>
+            <tbody>
+              {rsvps.map((r, i) => (
+                <tr
+                  key={r.id}
+                  style={{
+                    borderTop: i > 0 ? '1px solid #ede9d5' : undefined,
+                  }}
+                  onMouseEnter={(e) => ((e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#f5f2e8')}
+                  onMouseLeave={(e) => ((e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent')}
+                >
+                  <td className="px-5 py-3 font-medium" style={{ color: '#3b3d2e' }}>{r.name}</td>
+                  <td className="px-5 py-3" style={{ color: '#5c6348' }}>
+                    {r.partner_name || <span style={{ color: '#b0aa8e' }}>—</span>}
+                  </td>
+                  <td className="px-5 py-3" style={{ color: '#6b6b5a' }}>{r.phone}</td>
                   <td className="px-5 py-3">
                     <span
-                      className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                        ${r.status === 'attending'
-                          ? 'bg-emerald-100 text-emerald-800'
-                          : 'bg-red-100 text-red-700'
-                        }`}
+                      className="inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
+                      style={
+                        r.status === 'attending'
+                          ? { backgroundColor: '#e6f0e8', color: '#2d6a4f' }
+                          : { backgroundColor: '#fde8e8', color: '#b91c1c' }
+                      }
                     >
                       {r.status === 'attending' ? 'Attending' : 'Not Attending'}
                     </span>
                   </td>
-                  <td className="px-5 py-3 text-stone-600">
-                    {r.status === 'attending' ? r.guest_count + 1 : '—'}
-                  </td>
-                  <td className="px-5 py-3 text-stone-400">
+                  <td className="px-5 py-3" style={{ color: '#b0aa8e' }}>
                     {new Date(r.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
@@ -81,7 +95,7 @@ export default function AdminTable({ rsvps }: Props) {
               ))}
               {rsvps.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-5 py-10 text-center text-stone-400">
+                  <td colSpan={5} className="px-5 py-10 text-center" style={{ color: '#b0aa8e' }}>
                     No RSVPs yet.
                   </td>
                 </tr>

@@ -8,8 +8,8 @@ type RSVP = {
   created_at: string
   name: string
   phone: string
+  partner_name: string | null
   status: 'attending' | 'not_attending'
-  guest_count: number
 }
 
 export default function AdminPage() {
@@ -52,12 +52,12 @@ export default function AdminPage() {
 
   if (rsvps === null) {
     return (
-      <main className="min-h-screen bg-stone-100 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl shadow-lg border border-stone-200 p-10 w-full max-w-sm">
-          <h1 className="text-2xl font-serif text-stone-800 text-center mb-2">
+      <main className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#eae5d0' }}>
+        <div className="rounded-2xl shadow-lg p-10 w-full max-w-sm" style={{ backgroundColor: '#fdfaf2', border: '1px solid #ddd8be' }}>
+          <h1 className="text-2xl font-serif text-center mb-2" style={{ color: '#3b3d2e' }}>
             Admin Access
           </h1>
-          <p className="text-stone-400 text-sm text-center mb-8">
+          <p className="text-sm text-center mb-8" style={{ color: '#9e9a82' }}>
             Enter the admin password to view RSVPs
           </p>
           <form onSubmit={handleLogin} className="space-y-4">
@@ -67,15 +67,15 @@ export default function AdminPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
               required
-              className="w-full border border-stone-300 rounded-lg px-4 py-2.5 text-stone-800
-                         focus:outline-none focus:ring-2 focus:ring-rose-300 transition bg-white"
+              className="w-full rounded-lg px-4 py-2.5 text-stone-800 focus:outline-none transition bg-white"
+              style={{ border: '1px solid #c8c4a8' }}
             />
-            {error && <p className="text-red-600 text-sm">{error}</p>}
+            {error && <p className="text-sm" style={{ color: '#b91c1c' }}>{error}</p>}
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-rose-700 hover:bg-rose-800 disabled:bg-rose-300
-                         text-white font-semibold py-2.5 rounded-lg transition text-sm cursor-pointer"
+              className="w-full text-white font-semibold py-2.5 rounded-lg transition text-sm cursor-pointer"
+              style={{ backgroundColor: loading ? '#a8af8e' : '#6b7355' }}
             >
               {loading ? 'Checking...' : 'Sign In'}
             </button>
@@ -86,18 +86,18 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-100 py-12 px-4">
+    <main className="min-h-screen py-12 px-4" style={{ backgroundColor: '#eae5d0' }}>
       <div className="max-w-5xl mx-auto">
         <div className="flex items-start justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-serif text-stone-800">RSVP Dashboard</h1>
-            <p className="text-stone-500 text-sm mt-1">Emma &amp; James &middot; June 14th, 2026</p>
+            <h1 className="text-3xl font-serif" style={{ color: '#3b3d2e' }}>RSVP Dashboard</h1>
+            <p className="text-sm mt-1" style={{ color: '#7a7660' }}>Leonard &amp; Minky &middot; March 20th, 2026</p>
           </div>
           <button
             onClick={handleRefresh}
             disabled={loading}
-            className="text-sm text-rose-700 hover:text-rose-900 border border-rose-200 hover:border-rose-400
-                       px-4 py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
+            className="text-sm px-4 py-2 rounded-lg transition disabled:opacity-50 cursor-pointer"
+            style={{ color: '#4a5240', border: '1px solid #c4bc96' }}
           >
             {loading ? 'Refreshing...' : 'Refresh'}
           </button>
